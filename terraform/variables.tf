@@ -7,3 +7,5 @@ variable "zone" {
 }
 
 variable "project-id" {}
+
+variable "project-number" {}
