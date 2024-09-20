@@ -36,3 +36,32 @@ resource "google_service_account" "leaked-account-challenge-1" {
   account_id   = "gkeapp-file-uploader"
   display_name = "gkeapp-file-uploader"
 }
+
+resource "kubernetes_cluster_role" "gke-cluster-challenge-1-cluster-role" {
+  #https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/cluster_role
+  metadata {
+    name = "list-all-resources"
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["*"]
+    verbs      = ["list"]
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "gke-cluster-challenge-1-cluster-role-binding" {
+  metadata {
+    name = "list-all-resources-binding"
+  }
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = "list-all-resources"
+  }
+  subject {
+    kind      = "Group"
+    name      = "system:authenticated"
+    api_group = "rbac.authorization.k8s.io"
+  }
+}
