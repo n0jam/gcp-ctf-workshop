@@ -39,5 +39,9 @@ terraform.rc
 # terraform plan output
 tf.out
 
-# gcloud service account key
+# gcloud service account key for challenge 1
 *creds.json
+
+# ssh key for challenge 3
+leaked_ssh_key
+leaked_ssh_key.pub
