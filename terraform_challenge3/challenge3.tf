@@ -36,3 +36,17 @@ resource "google_compute_instance" "default" {
     ]
   }
 }
+
+resource "google_secret_manager_secret" "ssh-secret-challenge3" {
+  secret_id = "ssh-key"
+
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "ssh-secret-version-challenge3" {
+  secret = google_secret_manager_secret.ssh-secret-challenge3.id
+
+  secret_data = file("../leaked_ssh_key")
+}
