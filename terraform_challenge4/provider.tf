@@ -10,3 +10,10 @@ terraform {
 provider "google" {
   project = var.project-id
 }
+
+terraform {
+  backend "gcs" {
+    bucket  = "bsidesnyc2024terraform"
+    prefix  = "terraform/challenge4/state"
+  }
+}
