@@ -11,7 +11,6 @@ provider "google" {
   project = var.project-id
 }
 
-# GCS bucket created here: https://console.cloud.google.com/storage/browser/crowdstrike-rtbt-testing-terraform/terraform?project=hedonari-ablegu-oused-mit
 terraform {
   backend "gcs" {
     bucket  = "bsidesnyc2024terraform"
