@@ -22,5 +22,63 @@ You'll start out with just an IP address as your first piece of information.
 We are providing you with useful hints and commands for each challenge.
 Don't hesitate to use them, as you will have limited time for this CTF during our workshop.
 
+## Challenges
+
+### Challenge 1: Cluster confidentials
+
+You received just an IP address as your very first entrypoint into the GCP project.  
+Which ports are open? Is something listening here?  
+Does it give you an idea what kind of infrastructure it is?
+
+<details>
+  <summary>Hint 1</summary>
+  You found a GKE (Google Kubernetes Engine) cluster.<br>
+  As you are not authenticated, you are part of the group `system:anonymous` and you can't access much.<br>
+  What if you were in `system:authenticated`?<br>
+</details>
+<br>
+
+<details>
+  <summary>Hint 2</summary>
+  `system:authenticated` sounds like strict access control - but is it?<br>
+  All you need to do is authenticate - with pretty much any Google account.<br>
+  What if you can get a token for your own Google account and provide that to the API?<br>
+  Are there any endpoints you can access now?<br>
+</details>
+<br>
+
+<details>
+  <summary>Hint 3</summary>
+  `system:authenticated` will require you to present a Google access token.<br>
+  It can be any token - also for your own Google account that is not associated with our target GCP project.<br>
+  You can use the [oauth playground](https://developers.google.com/oauthplayground/) to get an access token.<br>
+  Select "Kubernetes Engine API v1" as a scope and exchange your authorization code for an access token.<br>
+  Present it to the GKE API:<br>
+  `curl -k -H "Authorization:Bearer <token>" https://<IP>/api`<br>
+  That's a more promising response than `403 Forbidden1`!<br>
+  Maybe you can find out, which permissions you have on the cluster as part of the `system:authenticated` group.<br>
+</details>
+<br>
+
+<details>
+  <summary>Hint 4</summary>
+  It would be nice to know what you can access on the cluster.<br>
+  Luckily, there is an endpoint for that too and you are allowed to query it.<br>
+  # ToDo
+</details>
+<br>
+
+Useful commands and tools:
+
+- `nmap -sC -sV <IP>` (don't worry if you don't have nmap installed. Guessing common open ports also works here)
+- `curl -k https://<IP>`
+- `curl -k -H "Authorization:Bearer <token>" https://<IP>/api/v1/...`
+- https://developers.google.com/oauthplayground/
+
+### Challenge 2: State of affairs
+### Challenge 3: Computing power
+### Challenge 4: Invoking answers
+### Challenge 5: In the shoes of an admin
+
 
 
