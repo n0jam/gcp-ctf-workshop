@@ -30,41 +30,52 @@ You received just an IP address as your very first entrypoint into the GCP proje
 Which ports are open? Is something listening here?  
 Does it give you an idea what kind of infrastructure it is?
 
+To simplify your next commands, set the IP address as an environment variable: `export IP=<IP>`
+
 <details>
   <summary>Hint 1</summary>
-  You found a GKE (Google Kubernetes Engine) cluster.<br>
-  As you are not authenticated, you are part of the group `system:anonymous` and you can't access much.<br>
-  What if you were in `system:authenticated`?<br>
+    You found a GKE (Google Kubernetes Engine) cluster.<br>
+    As you are not authenticated, you are part of the group `system:anonymous` and you can't access much.<br>
+    What if you were in `system:authenticated`?<br>
 </details>
 <br>
 
 <details>
   <summary>Hint 2</summary>
-  `system:authenticated` sounds like strict access control - but is it?<br>
-  All you need to do is authenticate - with pretty much any Google account.<br>
-  What if you can get a token for your own Google account and provide that to the API?<br>
-  Are there any endpoints you can access now?<br>
+    `system:authenticated` sounds like strict access control - but is it?<br>
+    All you need to do is authenticate - with pretty much any Google account.<br>
+    What if you can get a token for your own Google account and provide that to the API?<br>
+    Are there any endpoints you can access now?<br>
 </details>
 <br>
 
 <details>
   <summary>Hint 3</summary>
-  `system:authenticated` will require you to present a Google access token.<br>
-  It can be any token - also for your own Google account that is not associated with our target GCP project.<br>
-  You can use the [oauth playground](https://developers.google.com/oauthplayground/) to get an access token.<br>
-  Select "Kubernetes Engine API v1" as a scope and exchange your authorization code for an access token.<br>
-  Present it to the GKE API:<br>
-  `curl -k -H "Authorization:Bearer <token>" https://<IP>/api`<br>
-  That's a more promising response than `403 Forbidden1`!<br>
-  Maybe you can find out, which permissions you have on the cluster as part of the `system:authenticated` group.<br>
+    `system:authenticated` will require you to present a Google access token.<br>
+    It can be any token - also for your own Google account that is not associated with our target GCP project.<br>
+    You can use the [oauth playground](https://developers.google.com/oauthplayground/) to get an access token.<br>
+    Select "Kubernetes Engine API v1" as a scope and exchange your authorization code for an access token.<br>
+    To simplify the following commands, set your token in an environment variable: `export TOKEN=<your token>`<br>
+    Present it to the GKE API:<br>
+    `curl -k -H "Authorization:Bearer $TOKEN" https://$IP/api`<br>
+    That's a more promising response than `403 Forbidden1`!<br>
+    Maybe you can find out, which permissions you have on the cluster as part of the `system:authenticated` group.<br>
 </details>
 <br>
 
 <details>
   <summary>Hint 4</summary>
-  It would be nice to know what you can access on the cluster.<br>
-  Luckily, there is an endpoint for that too and you are allowed to query it.<br>
-  # ToDo
+    It would be nice to know what you can access on the cluster.<br>
+    Luckily, there is an endpoint for that too and you are allowed to query it:<br>
+    `curl -k -X POST -H "Content-Type: application/json" -d '{"apiVersion":"authorization.k8s.io/v1", "kind":"SelfSubjectRulesReview", "spec":{"namespace":"default"}}' -H "Authorization:Bearer $TOKEN" https://$IP/apis/authorization.k8s.io/v1/selfsubjectrulesreviews`<br>
+    It looks like you have read access to some resources on the default namespace of the cluster. Start enumerating some that might be interesting.<br>
+</details>
+<br>
+
+<details>
+  <summary>Hint 5</summary>
+    You can read all resources in the `file-uploader` namespace on the cluster. Which secrets might it hold?<br>
+    `curl -k -H "Authorization:Bearer $TOKEN" https://$IP/api/v1/namespaces/default/secrets`<br>
 </details>
 <br>
 
