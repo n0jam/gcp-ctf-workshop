@@ -1,5 +1,7 @@
 #import functions_framework
+import json
 import requests
+
 
 #@functions_framework.http
 def hello_http(request):
@@ -13,18 +15,25 @@ def hello_http(request):
         <https://flask.palletsprojects.com/en/1.1.x/api/#flask.make_response>.
     """
     request_json = request.get_json(silent=True)
-    request_args = request.args
+    print(request_json)
 
-    metadata = requests.get("http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token", headers={"Metadata-Flavor": "Google"})
-    id_r = requests.get("http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity", headers={"Metadata-Flavor": "Google"})
-    auth_r = requests.get("http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token?scopes=cloud-platform", headers={"Metadata-Flavor": "Google"})
+    response_dict = {"flag4": "You found flag 4!", "response": ""}
 
- 
 
-    if request_json and 'name' in request_json:
-        name = request_json['name']
-    elif request_args and 'name' in request_args:
-        name = request_args['name']
+    if request_json and 'url' in request_json:
+        url = request_json['url']
     else:
-        name = 'World'
-    return metadata.content
+        print("no url found")
+        response_dict["response"] = "invalid input"
+        return json.dumps(response_dict)
+
+#    metadata = requests.get("http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token", headers={"Metadata-Flavor": "Google"})
+# 
+    if (url.startswith("http://") or url.startswith("https://")):
+        response = requests.get(url, headers={"Metadata-Flavor": "Google"})
+        response_dict["response"] = response.text
+        return json.dumps(response_dict)
+
+    response_dict["response"] = "invalid input"
+    return json.dumps(response_dict)
+
