@@ -21,6 +21,7 @@ resource "google_compute_instance" "default" {
 
   metadata = {
     ssh-keys = format("alice:%s", file("../leaked_ssh_key.pub"))
+    flag3 = "You found flag3!"
   }
 
   service_account {

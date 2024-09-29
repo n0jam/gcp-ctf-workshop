@@ -30,4 +30,10 @@ resource "google_service_account_iam_member" "terraform-pipeline-impersonator-ch
   service_account_id = google_service_account.impersonation-challenge-5.name
   role               = "roles/iam.serviceAccountTokenCreator"
   member             = format("serviceAccount:%s", data.google_service_account.compute-account-challenge5.email)
+
+  condition {
+    title       = "flag5"
+    description = "You found flag5!"
+    expression  = "true"
+  }
 }

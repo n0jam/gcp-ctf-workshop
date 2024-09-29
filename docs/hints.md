@@ -112,7 +112,7 @@ So what can you do with this account? Did you find any hints during challenge 1?
 <details>
   <summary>Hint 1</summary>
 
-    In the configmap and deployment of the app ond the GKE cluster, you can find the name of a storage bucket.  
+    The kubernetes secret you found in challenge 1 has a label telling you the name of a storage bucket.
     Probably the service account you found belongs to this app and it can access the storage bucket.  
 
 </details>
