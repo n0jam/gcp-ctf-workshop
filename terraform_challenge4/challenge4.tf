@@ -32,7 +32,7 @@ resource "google_cloudfunctions_function" "function" {
   source_archive_bucket = google_storage_bucket.cloud-function-bucket.name
   source_archive_object = google_storage_bucket_object.gcs-function-file.name
   trigger_http          = true
-  entry_point           = "hello_http"
+  entry_point           = "compute_engine_monitoring"
   service_account_email = data.google_service_account.compute-account-challenge4.email
 }
 
