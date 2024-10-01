@@ -6,6 +6,9 @@ ZONE=europe-west1-b
 PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID | grep projectNumber | tr -d -c 0-9)
 
 # set up resources with terraform
+echo "##########################################################"
+echo "> Beginning terraform setup for - challenges 1, 2 and 5."
+echo "##########################################################"
 
 cd terraform
 terraform init -input=false
@@ -47,6 +50,9 @@ rm flag2.txt
 
 # the compute engine for challenge 3 gets created in its own terraform run
 # this is done to get an extra state file that we can leak on the storage bucket
+echo "##########################################################"
+echo "> Beginning terraform setup for - challenge 3."
+echo "##########################################################"
 cd terraform_challenge3
 terraform init -input=false
 terraform plan -out tf.out -var project-id="$PROJECT_ID" -var project-number="$PROJECT_NUMBER" -input=false
@@ -55,8 +61,11 @@ cd ../
 
 # upload the state file to the storage bucket
 pwd
-gcloud storage cp ./terraform_challenge3/terraform.tfstate gs://file-uploads-$PROJECT_ID
+gcloud storage cp gs://bsidesnyc2024terraform/terraform/challenge3/state/default.tfstate gs://file-uploads-$PROJECT_ID
 
+echo "##########################################################"
+echo "> Beginning terraform setup for - challenge 4."
+echo "##########################################################"
 # challenge 4
 # copy function invocation script on compute engine
 COMPUTE_IP=$(gcloud compute instances describe  my-instance-challenge3 --project $PROJECT_ID | grep natIP | awk '{print $2}')
