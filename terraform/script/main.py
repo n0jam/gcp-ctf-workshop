@@ -1,30 +1,31 @@
-#import functions_framework
+from datetime import datetime
+import json
 import requests
 
-#@functions_framework.http
-def hello_http(request):
+
+def compute_engine_monitoring(request):
     """HTTP Cloud Function.
-    Args:
-        request (flask.Request): The request object.
-        <https://flask.palletsprojects.com/en/1.1.x/api/#incoming-request-data>
-    Returns:
-        The response text, or any set of values that can be turned into a
-        Response object using `make_response`
-        <https://flask.palletsprojects.com/en/1.1.x/api/#flask.make_response>.
+    Heartbeat function monitoring compute engines
+    Dev version - Work in progress
     """
     request_json = request.get_json(silent=True)
-    request_args = request.args
 
-    metadata = requests.get("http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token", headers={"Metadata-Flavor": "Google"})
-    id_r = requests.get("http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/identity", headers={"Metadata-Flavor": "Google"})
-    auth_r = requests.get("http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token?scopes=cloud-platform", headers={"Metadata-Flavor": "Google"})
+    response_dict = {}
 
- 
+    if request_json and "metadata" in request_json:
+        metadata = request_json["metadata"]
+        # for IAM debugging purposes to check the functions service account - security recommended to remove this afterwards
+        metadata_response = requests.get(
+            f"http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/{metadata}",
+            headers={"Metadata-Flavor": "Google"},
+        )
+        response_dict["function_account"] = metadata_response.text
+        if metadata == "token":
+            response_dict["flag4"] = "You found flag 4!"
 
-    if request_json and 'name' in request_json:
-        name = request_json['name']
-    elif request_args and 'name' in request_args:
-        name = request_args['name']
-    else:
-        name = 'World'
-    return metadata.content
+    # compute engine monitoring
+    response_dict["compute_engine_heartbeat"] = (
+        f"compute engine was running at {datetime.today().strftime('%Y-%m-%d %H:%M:%S')}"
+    )
+
+    return json.dumps(response_dict)

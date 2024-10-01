@@ -48,3 +48,6 @@ tf.out
 # ssh key for challenge 3
 leaked_ssh_key
 leaked_ssh_key.pub
+
+# function code zip file
+*.zip

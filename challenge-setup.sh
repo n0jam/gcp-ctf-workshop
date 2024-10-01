@@ -9,6 +9,9 @@ PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID | grep projectNumber | tr 
 mkdir temporary_files
 
 # set up resources with terraform
+echo "##########################################################"
+echo "> Beginning terraform setup for - challenges 1, 2 and 5."
+echo "##########################################################"
 
 cd terraform
 terraform init -input=false
@@ -32,9 +35,9 @@ kubectl label secret gkeapp-file-uploader-account "bucket=file-uploads-$PROJECT_
 # flag 1
 kubectl create secret generic flag1 --type=string --from-literal=flag1="You found flag 1!"
 
-#ToDo:
-# create misconfigured role binding to system-authenticated -> this opens up the challenge and makes the project vulnerable from outside attacks.
-#
+# Configure cluster role bindings
+kubectl apply -f manifests/roles.yaml 
+kubectl apply -f manifests/bindings.yaml
 
 # setup for challenge 2
 
@@ -49,6 +52,9 @@ gsutil cp temporary_files/flag2.txt gs://file-uploads-$PROJECT_ID
 
 # the compute engine for challenge 3 gets created in its own terraform run
 # this is done to get an extra state file that we can leak on the storage bucket
+echo "##########################################################"
+echo "> Beginning terraform setup for - challenge 3."
+echo "##########################################################"
 cd terraform_challenge3
 terraform init -input=false
 terraform plan -out tf.out -var project-id="$PROJECT_ID" -var project-number="$PROJECT_NUMBER" -input=false
@@ -57,5 +63,12 @@ cd ../
 
 # upload the state file to the storage bucket
 pwd
-gcloud storage cp ./terraform_challenge3/terraform.tfstate gs://file-uploads-$PROJECT_ID
+gcloud storage cp gs://bsidesnyc2024terraform/terraform/challenge3/state/default.tfstate gs://file-uploads-$PROJECT_ID
 
+echo "##########################################################"
+echo "> Beginning terraform setup for - challenge 4."
+echo "##########################################################"
+# challenge 4
+# copy function invocation script on compute engine
+COMPUTE_IP=$(gcloud compute instances describe  my-instance-challenge3 --project $PROJECT_ID | grep natIP | awk '{print $2}')
+scp -i ./leaked_ssh_key -o StrictHostKeyChecking=no ./invoke_monitoring_function.sh alice@$COMPUTE_IP:/home/alice/

