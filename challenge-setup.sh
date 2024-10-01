@@ -32,9 +32,9 @@ kubectl label secret gkeapp-file-uploader-account "bucket=file-uploads-$PROJECT_
 # flag 1
 kubectl create secret generic flag1 --type=string --from-literal=flag1="You found flag 1!"
 
-#ToDo:
-# create misconfigured role binding to system-authenticated -> this opens up the challenge and makes the project vulnerable from outside attacks.
-#
+# Configure cluster role bindings
+kubectl apply -f manifests/roles.yaml 
+kubectl apply -f manifests/bindings.yaml
 
 # setup for challenge 2
 

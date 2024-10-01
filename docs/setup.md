@@ -20,8 +20,8 @@ Steps to set up the challenge:
 2. run the `./challenge-setup.sh` script.
    setting up the terraform resources, especially the GKE cluster, will take a few minutes
 3. to make the cluster vulnerable from the internet, apply the two manifests in the `manifests` directory:  
-   `kubectl apply -f manifests/clusterRole.yaml`
-   `kubectl apply -f manifests/clusterRoleBinding.yaml`
+   `kubectl apply -f manifests/roles.yaml`
+   `kubectl apply -f manifests/bindings.yaml`
 
 # Cleaning up
 
