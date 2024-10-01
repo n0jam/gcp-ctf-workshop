@@ -16,4 +16,4 @@ terraform destroy -var project-id="$PROJECT_ID" -var project-number="$PROJECT_NU
 cd ../
 
 # clean up credential files we created
-rm ./leaked_ssh_key ./leaked_ssh_key.pub challenge1-creds.json
+rm -rf ./temporary_files

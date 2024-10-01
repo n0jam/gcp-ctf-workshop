@@ -51,3 +51,6 @@ leaked_ssh_key.pub
 
 # function code zip file
 *.zip
+
+# temporary files
+temporary_files/*
