@@ -57,3 +57,7 @@ cd ../
 pwd
 gcloud storage cp ./terraform_challenge3/terraform.tfstate gs://file-uploads-$PROJECT_ID
 
+# challenge 4
+# copy function invocation script on compute engine
+COMPUTE_IP=$(gcloud compute instances describe  my-instance-challenge3 --project $PROJECT_ID | grep natIP | awk '{print $2}')
+scp -i ./leaked_ssh_key -o StrictHostKeyChecking=no ./invoke_monitoring_function.sh alice@$COMPUTE_IP:/home/alice/
