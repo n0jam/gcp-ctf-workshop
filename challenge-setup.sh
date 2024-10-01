@@ -5,6 +5,9 @@ read -p "Your GCP project ID: " PROJECT_ID
 ZONE=europe-west1-b
 PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID | grep projectNumber | tr -d -c 0-9)
 
+#  create directory for temporary files
+mkdir temporary_files
+
 # set up resources with terraform
 
 cd terraform
@@ -16,13 +19,13 @@ cd ../
 # setup for challenge 1
 
 # create a service account key for the account we will leak in challenge 1
-gcloud iam service-accounts keys create challenge1-creds.json --iam-account=gkeapp-file-uploader@$PROJECT_ID.iam.gserviceaccount.com
+gcloud iam service-accounts keys create temporary_files/challenge1-creds.json --iam-account=gkeapp-file-uploader@$PROJECT_ID.iam.gserviceaccount.com
 
 # set up connection to the gke cluster created in challenge 1
 gcloud container clusters get-credentials gke-cluster-challenge-1 --zone $ZONE --project $PROJECT_ID
 
 # create a kubernetes secret containing the service account key
-kubectl create secret generic gkeapp-file-uploader-account --from-file=./challenge1-creds.json
+kubectl create secret generic gkeapp-file-uploader-account --from-file=temporary_files/challenge1-creds.json
 # leave a hint in form of a label which bucket this service account can access
 kubectl label secret gkeapp-file-uploader-account "bucket=file-uploads-$PROJECT_ID"
 
@@ -36,14 +39,13 @@ kubectl create secret generic flag1 --type=string --from-literal=flag1="You foun
 # setup for challenge 2
 
 # create ssh key for vulnerable compute VM
-if [ ! -f ./leaked_ssh_key ]; then
-ssh-keygen -t ed25519 -C "alice" -f ./leaked_ssh_key -N ''
+if [ ! -f temporary_files/leaked_ssh_key ]; then
+ssh-keygen -t ed25519 -C "alice" -f temporary_files/leaked_ssh_key -N ''
 fi
 
 # flag 2
-echo "You found flag 2!" > flag2.txt
-gsutil cp flag2.txt gs://file-uploads-$PROJECT_ID
-rm flag2.txt
+echo "You found flag 2!" > temporary_files/flag2.txt
+gsutil cp temporary_files/flag2.txt gs://file-uploads-$PROJECT_ID
 
 # the compute engine for challenge 3 gets created in its own terraform run
 # this is done to get an extra state file that we can leak on the storage bucket
