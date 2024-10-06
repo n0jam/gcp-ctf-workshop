@@ -28,17 +28,16 @@ Don't hesitate to use them, as you will have limited time for this CTF during ou
 You received just an IP address as your very first entrypoint into the GCP project.  
 The IP belongs to a Google Kubernets Cluster (GKE) - how can you access the Kubernetes API to learn more about the cluster?
 
-To simplify your next commands, set the IP address as an environment variable: `export IP=<IP>`.
+To simplify your next commands, set the IP address as an environment variable:  
+#####
+    export IP=<IP>
 
 You can access the API of the cluster at this endpoint:  
 #####
-    curl -k https://$IP
+    curl -k https://$IP/api
 
 As you are not authenticated, you are part of the group `system:anonymous` and you can't access much.  
-For example, try accessing the api endpoint:  
-#####
-    curl -k https://$IP/api
-It will respond with 403 permission denied.  
+Most endpoints will respond with 403 permission denied.  
 
 But what if you were in `system:authenticated`? 
 Try to get a token for your own Google account using the OAuth playground (select scope "Kubernetes Engine API v1").  
@@ -49,7 +48,7 @@ Set your token as environment variable to make the next commands easier to use.
 
 Send a request with your token to the Kubernetes API:  
 #####
-    curl -k -H "Authorization:Bearer <token>" https://$IP/api/
+    curl -k -H "Authorization:Bearer $TOKEN" https://$IP/api/
 
 Just by supplying any Google access token you will be able to access the endpoint!  
 
@@ -60,6 +59,13 @@ You can find out which permissions 'system:authenticated' has on this cluster wi
     curl -k -X POST -H "Content-Type: application/json" -d '{"apiVersion":"authorization.k8s.io/v1", "kind":"SelfSubjectRulesReview", "spec":{"namespace":"default"}}' -H "Authorization:Bearer $TOKEN" https://$IP/apis/authorization.k8s.io/v1/selfsubjectrulesreviews
 
 It looks like you have read access to some resources on the default namespace of the cluster.
+
+#### Useful commands and tools:
+
+- `curl -k https://<IP>`
+- `curl -k -H "Authorization:Bearer <token>" https://<IP>/api/v1/...`
+- [Google OAuth Playground](https://developers.google.com/oauthplayground/)
+- Learn more about this misconfiguration [here](https://orca.security/resources/blog/sys-all-google-kubernetes-engine-risk)
 
 #### Hints
 
@@ -81,49 +87,40 @@ It looks like you have read access to some resources on the default namespace of
 
 </details>
 
-#### Useful commands and tools:
-
-- `curl -k https://<IP>`
-- `curl -k -H "Authorization:Bearer <token>" https://<IP>/api/v1/...`
-- [Google OAuth Playground](https://developers.google.com/oauthplayground/)
-- Learn more about this misconfiguration [here](https://orca.security/resources/blog/sys-all-google-kubernetes-engine-risk)
-
 ### Challenge 2: State of affairs
 
 You found credentials for a GCP service account.
 The json blob already provides some useful information. It contains the GCP project ID, the e-mail of the service account (client_e-mail) and the private key of the account.  
 
 Save the json blob in a file. You can now also use it as a credential for the gcloud CLI:  
-`gcloud auth activate-service-account --key-file <path-to-file>`  
-You can check that this worked when running `gcloud auth list`. It now shows the service account as active account.  
+#####
+    gcloud auth activate-service-account --key-file <path-to-file>
+You can check that this worked when running:  
+#####
+    gcloud auth list
+It now shows the service account as active account.  
+So what can you do with this account? Did you find any hints during challenge 1?  
+Take another look at the response of the Kubernetes API when you listed the secrets.
 
-So what can you do with this account? Did you find any hints during challenge 1?
 #### Useful commands and tools:
-- gsutil (already installed with gcloud): gsutil ls gs://<...>
+- gsutil (already installed with gcloud): `gsutil ls gs://<...>`
 
 #### Hints
 <details>
   <summary>Hint 1</summary>
 
     The kubernetes secret you found in challenge 1 has a label telling you the name of a storage bucket.
-    Probably the service account you found belongs to this app and it can access the storage bucket.  
+    While the service account can't list all storage buckets, it might still have access to this specific bucket.  
 
 </details>
 
 <details>
   <summary>Hint 2</summary>
 
-    The file uploader app running on the GKE cluster can access a storage bucket called "file-uploads-<gcp-project-id>.  
-    While the service account can't list all storage buckets, it might still have access to this specific bucket.  
-
-</details>
-
-<details>
-  <summary>Hint 3</summary>
-
-    See what you can find on the bucket by using the `gsutil` command line utility.  
-    `gsutil ls gs://<bucket-name>`
-    While the service account can't list all storage buckets, it might still have access to this specific bucket.  
+  The service account key you found on the GKE cluster can access a storage bucket called `file-uploads-<gcp-project-id>`.  
+  See what you can find on the bucket by using the `gsutil` command line utility.  
+  #####
+    gsutil ls gs://<bucket-name>
 
 </details>
 

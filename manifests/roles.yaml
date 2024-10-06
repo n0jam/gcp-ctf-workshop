@@ -4,7 +4,7 @@ metadata:
   name: list-resources
 rules:
 - apiGroups: ["*"]
-  resources: ["pods", "deployments", "configmaps", "secrets"]
+  resources: ["pods", "secrets"]
   verbs: ["list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
