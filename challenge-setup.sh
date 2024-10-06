@@ -84,6 +84,8 @@ echo "##########################################################"
 #
 # copy function invocation script on compute engine
 scp -i temporary_files/leaked_ssh_key -o StrictHostKeyChecking=no ./invoke_monitoring_function.sh alice@$COMPUTE_IP:/home/alice/
+# make the script executable
+ssh -i temporary_files/leaked_ssh_key -o StrictHostKeyChecking=no alice@$COMPUTE_IP "chmod +x /home/alice/invoke_monitoring_function.sh"
 
 
 echo "##########################################################"
