@@ -3,7 +3,7 @@
 ## Your Goal
 
 Your goal of this CTF is to exploit a vulnerable GCP project and find up to 5 flags.
-During the challenge you will be able to move through the environment and step by step escalate your privileges until you manage the IAM bindings on the project, esentially allowing you to gain control of all resources in the project.
+During the challenge you will be able to move through the environment and step by step escalate your privileges until you manage the IAM bindings on the project, essentially allowing you to gain control of all resources in the project.
 (In our CTF workshop setup, we have to keep you in check a bit and you will only be able to manage specific IAM bindings.)
 
 ## Prerequisites
@@ -15,7 +15,7 @@ To play this CTF and participate in our workshop you will need:
 
 ## Your starting point
 
-The cloud services in the project might be misconfigured or leak information that can be useful for you as attacker.
+The cloud services in the project might be misconfigured or leak information that can be useful for you as an attacker.
 You'll start out with just an IP address as your first piece of information.
 
 We are providing you with useful hints and commands for each challenge.
@@ -23,10 +23,10 @@ Don't hesitate to use them, as you will have limited time for this CTF during ou
 
 ## Challenges
 
-### Challenge 1: Cluster confidentials
+### Challenge 1: Confidential Cluster
 
 You received just an IP address as your very first entrypoint into the GCP project.  
-The IP belongs to a Google Kubernets Cluster (GKE) - how can you access the Kubernetes API to learn more about the cluster?
+The IP belongs to a Google Kubernetes Cluster (GKE) - how can you access the Kubernetes API to learn more about the cluster?
 
 To simplify your next commands, set the IP address as an environment variable:  
 #####
@@ -52,18 +52,21 @@ Send a request with your token to the Kubernetes API:
 
 Just by supplying any Google access token you will be able to access the endpoint!  
 
-Once you obtained access and can read from the Kubernets API - what API resources can you query?
+Once you have obtained access and can read from the Kubernetes API - what API resources can you query?
 
 You can find out which permissions 'system:authenticated' has on this cluster with a request to this endpoint:  
 #####
     curl -k -X POST -H "Content-Type: application/json" -d '{"apiVersion":"authorization.k8s.io/v1", "kind":"SelfSubjectRulesReview", "spec":{"namespace":"default"}}' -H "Authorization:Bearer $TOKEN" https://$IP/apis/authorization.k8s.io/v1/selfsubjectrulesreviews
 
-It looks like you have read access to some resources on the default namespace of the cluster.
+It looks like you have read access to some resources on the default namespace of the cluster.  
+You can also query them by using the Kubernetes API:  
+#####
+    curl -k -H "Authorization:Bearer <token>" https://<IP>/api/v1/namespaces/default/...
 
 #### Useful commands and tools:
 
 - `curl -k https://<IP>`
-- `curl -k -H "Authorization:Bearer <token>" https://<IP>/api/v1/...`
+- `curl -k -H "Authorization:Bearer <token>" https://<IP>/api/v1/namespaces/default/...`
 - [Google OAuth Playground](https://developers.google.com/oauthplayground/)
 - Learn more about this misconfiguration [here](https://orca.security/resources/blog/sys-all-google-kubernetes-engine-risk)
 
@@ -90,7 +93,11 @@ It looks like you have read access to some resources on the default namespace of
 ### Challenge 2: State of affairs
 
 You found credentials for a GCP service account.
-The json blob already provides some useful information. It contains the GCP project ID, the e-mail of the service account (client_e-mail) and the private key of the account.  
+The json blob already provides some useful information. It contains the GCP project ID, the email of the service account (client_e-mail) and the private key of the account.  
+
+To use the project id in other commands later during this challenge, set it as environment variable:  
+#####
+    export PROJECT_ID=<project-id>
 
 Save the json blob in a file. You can now also use it as a credential for the gcloud CLI:  
 #####
@@ -117,7 +124,7 @@ Take another look at the response of the Kubernetes API when you listed the secr
 <details>
   <summary>Hint 2</summary>
 
-  The service account key you found on the GKE cluster can access a storage bucket called `file-uploads-<gcp-project-id>`.  
+  The service account key you found on the GKE cluster can access a storage bucket called `file-uploads-$PROJECT_ID`.  
   See what you can find on the bucket by using the `gsutil` command line utility.  
   #####
     gsutil ls gs://<bucket-name>
@@ -136,7 +143,7 @@ Would that help you to move on into other infrastructure deployed here?
 <details>
   <summary>Hint 1</summary>
 
-  The state file contains the parameters that were used to setup a Google Compute Engine VM.  
+  The state file contains the parameters that were used to set up a Google Compute Engine VM.  
   But additionally, it contains a secret ...  
   Can you combine this information to access the VM?
 
@@ -165,7 +172,7 @@ Would that help you to move on into other infrastructure deployed here?
 
 ### Challenge 4: Invoking answers
 
-You can controll a compute instance in the project! Let's look around a bit to find out what this instance can do.  
+You can control a compute instance in the project! Let's look around a bit to find out what this instance can do.  
 Your compute instance has a GCP service account assigned to it, allowing it to interact with the GCP APIs.  
 Check which service account this instance uses and what this account can do.  
 #####
@@ -179,12 +186,12 @@ As you now have access to the compute VM, you could also query the metadata serv
 
 As the compute instance has gcloud installed, using `gcloud auth list` or `gcloud auth print-access-token` is more convenient though.  
 
-The service account of this compute engine is the default compute service account! A very powerfull account in GCP.  
+The service account of this compute engine is the default compute service account! A very powerful account in GCP.  
 By default, it has the "Editor" role on a GCP project! But before getting too excited ... try using some of your new powers:  
 #####
     gcloud compute instances list
 "Request had insufficient authentication scopes". That is disappointing.  
-You can list your oauth access scopes with this command:  
+You can list your OAuth access scopes with this command:  
 #####
     curl -i https://www.googleapis.com/oauth2/v3/tokeninfo\?access_token=$(gcloud auth print-access-token)
 
@@ -251,7 +258,7 @@ You can tell gcloud to use your new token by setting it as environment variable:
 
 Now, let's try to list the IAM policy on this GCP project to see which project-level access your account has:  
 #####
-    gcloud projects get-iam-policy <project-id>
+    gcloud projects get-iam-policy $PROJECT_ID
 
 You are Editor on this project which allows you read and write access to almost all resources.  
 Congratulations! You compromised this GCP project.  
@@ -272,14 +279,14 @@ The `terraform-pipeline` account might be powerful. When you take a look again a
 This looks like a custom role the developers created for their terraform pipeline.  
 Let's see what permissions it contains:  
 #####
-    gcloud iam roles describe TerraformPipelineProjectAdmin --project <project-id>
+    gcloud iam roles describe TerraformPipelineProjectAdmin --project $PROJECT_ID
 This role allows setting new IAM bindings on the project!  
 You haven't compromised any resource that uses this service account, but luckily the compute service account that you control has the `serviceAccountTokenCreator` role on it:  
 #####
     gcloud iam service-accounts get-iam-policy <terraform service account>
 
 #### Useful commands and tools:
-- list the IAM bindings on project level: `gcloud projects get-iam-policy <project-id>`
+- list the IAM bindings on project level: `gcloud projects get-iam-policy $PROJECT_ID`
 - list service accounts: `gcloud iam service-accounts list` 
 - get IAM bindings showing who can control this service account: `gcloud iam service-accounts get-iam-policy <service account>`
 - the [ServiceAccountTokenCreator role](https://cloud.google.com/iam/docs/service-account-permissions#token-creator-role)
@@ -298,12 +305,12 @@ You haven't compromised any resource that uses this service account, but luckily
 <details>
   <summary>Hint 2</summary>
 
-    Add your own Google Account to the GCP project by running:  
-    `gcloud projects add-iam-policy-binding <project-id> --member=user:<your Google account> --role=roles/viewer --impersonate-service-account <terraform pipeline account>`
+  Add your own Google Account to the GCP project by running:  
+    `gcloud projects add-iam-policy-binding $PROJECT_ID --member=user:<your Google account> --role=roles/viewer --impersonate-service-account <terraform pipeline account>`
 
 </details>
 
-When you completed the bonus challenge, you should be able to access this project in the cloud console in your browser.  
+When you complete the bonus challenge, you should be able to access this project in the cloud console in your browser.  
 Log in with the Google account you just added.  
 
 You finished the challenge and pwnd the vulnerable Google Cloud Project!
