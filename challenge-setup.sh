@@ -83,9 +83,13 @@ echo "> Setup for challenge 4."
 echo "##########################################################"
 #
 # copy function invocation script on compute engine
-scp -i temporary_files/leaked_ssh_key -o StrictHostKeyChecking=no ./invoke_monitoring_function.sh alice@$COMPUTE_IP:/home/alice/
-# make the script executable
-ssh -i temporary_files/leaked_ssh_key -o StrictHostKeyChecking=no alice@$COMPUTE_IP "chmod +x /home/alice/invoke_monitoring_function.sh"
+scp -i temporary_files/leaked_ssh_key -o StrictHostKeyChecking=no ./invoke_monitoring_function.sh alice@$COMPUTE_IP:/tmp
+# make the script executable and not writeable and owned by root
+ssh -i temporary_files/leaked_ssh_key -o StrictHostKeyChecking=no alice@$COMPUTE_IP "sudo mv /tmp/invoke_monitoring_function.sh /usr/local/bin/; cd /home/alice && ln -s /usr/local/bin/invoke_monitoring_function.sh; sudo chmod 755 /usr/local/bin/invoke_monitoring_function.sh; sudo chown root:root /usr/local/bin/invoke_monitoring_function.sh"
+# drop sudo privileges for alice
+ssh -i temporary_files/leaked_ssh_key -o StrictHostKeyChecking=no alice@$COMPUTE_IP "sudo deluser alice google-sudoers"
+
+
 
 
 echo "##########################################################"
