@@ -23,7 +23,7 @@ resource "google_compute_instance" "default" {
     ssh-keys = format("alice:%s", file("../temporary_files/leaked_ssh_key.pub"))
   }
 
-  metadata_startup_script = format("echo PROJECT_ID=%s >> /etc/environment", var.project-id)
+  metadata_startup_script = format("echo PROJECT_ID=%s >> /etc/environment; echo LOCATION=%s >> /etc/environment", var.project-id, var.region)
 
   service_account {
     email = data.google_service_account.compute-account-challenge3.email

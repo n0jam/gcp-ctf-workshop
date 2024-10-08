@@ -88,6 +88,10 @@ scp -i temporary_files/leaked_ssh_key -o StrictHostKeyChecking=no ./invoke_monit
 ssh -i temporary_files/leaked_ssh_key -o StrictHostKeyChecking=no alice@$COMPUTE_IP "sudo mv /tmp/invoke_monitoring_function.sh /usr/local/bin/; cd /home/alice && ln -s /usr/local/bin/invoke_monitoring_function.sh; sudo chmod 755 /usr/local/bin/invoke_monitoring_function.sh; sudo chown root:root /usr/local/bin/invoke_monitoring_function.sh"
 # drop sudo privileges for alice
 ssh -i temporary_files/leaked_ssh_key -o StrictHostKeyChecking=no alice@$COMPUTE_IP "sudo deluser alice google-sudoers"
+# copy the function source code directly on the bucket
+gsutil cp terraform/script/main.py gs://cloud-function-bucket-challenge4/
+# remove the function zip file from the storage bucket to not mislead players to try and extract it
+gsutil rm gs://cloud-function-bucket-challenge4/main.zip
 
 
 
