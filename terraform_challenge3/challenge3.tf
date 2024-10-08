@@ -5,7 +5,7 @@ data "google_service_account" "compute-account-challenge3" {
 resource "google_compute_instance" "default" {
   # ToDo: come up with a better name - better story what this instance is for
   name         = "my-instance-challenge3"
-  machine_type = "e2-micro"
+  machine_type = "e2-medium"
   zone         = format("%s-%s", var.region, var.zone)
 
   boot_disk {
