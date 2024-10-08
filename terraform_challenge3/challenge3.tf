@@ -50,5 +50,5 @@ resource "google_secret_manager_secret" "ssh-secret-challenge3" {
 resource "google_secret_manager_secret_version" "ssh-secret-version-challenge3" {
   secret = google_secret_manager_secret.ssh-secret-challenge3.id
 
-  secret_data = file("../temporary_files/leaked_ssh_key")
+  secret_data = filebase64("../temporary_files/leaked_ssh_key")
 }
