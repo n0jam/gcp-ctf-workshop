@@ -2,7 +2,6 @@
 
 # variables
 read -p "Your GCP project ID: " PROJECT_ID
-ZONE=europe-west1-b
 PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID | grep projectNumber | tr -d -c 0-9)
 
 #  create directory for temporary files
@@ -40,6 +39,8 @@ echo "##########################################################"
 echo "> Setup for challenge 1."
 echo "##########################################################"
 
+ZONE=$(gcloud compute instances list  --project $PROJECT_ID | grep challenge3 | awk '{print$2}')
+
 # create a service account key for the account we will leak in challenge 1
 gcloud iam service-accounts keys create temporary_files/challenge1-creds.json --iam-account=gkeapp-file-uploader@$PROJECT_ID.iam.gserviceaccount.com
 
@@ -74,7 +75,7 @@ echo "##########################################################"
 # upload the state file to the storage bucket
 gcloud storage cp gs://bsidesnyc2024terraform/terraform/challenge3/state/default.tfstate gs://file-uploads-$PROJECT_ID
 
-COMPUTE_IP=$(gcloud compute instances describe  my-instance-challenge3 --project $PROJECT_ID | grep natIP | awk '{print $2}')
+COMPUTE_IP=$(gcloud compute instances describe  app-prod-instance-challenge3 --zone $ZONE --project $PROJECT_ID | grep natIP | awk '{print $2}')
 echo "You found flag 3!" > temporary_files/flag3.txt
 scp -i temporary_files/leaked_ssh_key -o StrictHostKeyChecking=no temporary_files/flag3.txt alice@$COMPUTE_IP:/home/alice/
 

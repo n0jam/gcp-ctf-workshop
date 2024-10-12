@@ -2,7 +2,6 @@
 
 # variables
 read -p "Your GCP project ID: " PROJECT_ID
-ZONE=europe-west1-b
 PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID | grep projectNumber | tr -d -c 0-9)
 
 # destroy resources with terraform

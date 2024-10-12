@@ -13,7 +13,7 @@ data "google_service_account" "compute-account-challenge4" {
 
 resource "google_storage_bucket" "cloud-function-bucket" {
   name          = "cloud-function-bucket-challenge4"
-  location      = "US"
+  location      = var.region
   force_destroy = true
 }
 

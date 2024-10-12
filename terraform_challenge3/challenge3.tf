@@ -2,9 +2,8 @@ data "google_service_account" "compute-account-challenge3" {
   account_id = format("%s-compute@developer.gserviceaccount.com", var.project-number)
 }
 
-resource "google_compute_instance" "default" {
-  # ToDo: come up with a better name - better story what this instance is for
-  name         = "my-instance-challenge3"
+resource "google_compute_instance" "compute-instance-challenge3" {
+  name         = "app-prod-instance-challenge3"
   machine_type = "e2-medium"
   zone         = format("%s-%s", var.region, var.zone)
 
