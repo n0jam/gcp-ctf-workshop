@@ -1,7 +1,7 @@
 # Commands
 
 <details>
-  <summary>**Challenge 1**</summary>
+  <summary>***** Challenge 1 *****</summary>
 
 ## Challenge 1
 
@@ -51,7 +51,7 @@ You can also query them by using the Kubernetes API:
 #
 
 <details>
-  <summary>**Challenge 2**</summary>
+  <summary>***** Challenge 2 *****</summary>
 
 ## Challenge 2
 
@@ -86,7 +86,7 @@ check service account
 #
 
 <details>
-  <summary>**Challenge 3**</summary>
+  <summary>***** Challenge 3 *****</summary>
 
 ## Challenge 3
 
@@ -108,7 +108,7 @@ read state file
 #
 
 <details>
-  <summary>**Challenge 4**</summary>
+  <summary>***** Challenge 4 *****</summary>
 
 ## Challenge 4
 
@@ -158,7 +158,7 @@ list storage buckets from VM
 #
 
 <details>
-  <summary>**Challenge 5**</summary>
+  <summary>***** Challenge 5 *****</summary>
 
 ## Challenge 5
 
