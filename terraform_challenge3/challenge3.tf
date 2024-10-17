@@ -22,7 +22,7 @@ resource "google_compute_instance" "compute-instance-challenge3" {
     ssh-keys = format("alice:%s", file("../temporary_files/leaked_ssh_key.pub"))
   }
 
-  metadata_startup_script = format("echo PROJECT_ID=%s >> /etc/environment; echo LOCATION=%s >> /etc/environment", var.project-id, var.region)
+  metadata_startup_script = format("echo PROJECT_ID=%s >> /etc/environment; echo LOCATION=%s >> /etc/environment; echo unset HISTFILE >>/home/alice/.bashrc", var.project-id, var.region)
 
   service_account {
     email = data.google_service_account.compute-account-challenge3.email
