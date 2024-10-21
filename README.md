@@ -2,6 +2,10 @@
 
 # gcp-ctf-workshop
 
+> [!WARNING]
+> This CTF setup will create a misconfigured GCP project that is vulnerable to the internet.
+> Don't spin this up in a production environment.
+
 This repository contains the code used to set up the infrastructure for our BSides NY 2024 workshop "A hitchhiker's guide to a Google Cloud CTF"
 
 You can use this setup if you want to experiment with the challenges in your own GCP project.
